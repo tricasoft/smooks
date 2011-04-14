@@ -212,9 +212,11 @@ public class SmooksProcessor implements Processor, Service, CamelContextAware
     {
         if (smooks == null)
         {
-            smooks = createSmooks(configUri);
+            smooks = new Smooks(configUri);
         }
         smooks.getApplicationContext().setAttribute(CamelContext.class, camelContext);
+        smooks.setClassLoader(this.getClass().getClassLoader());
+        
         addAppenders(smooks, visitorAppenders);
         addVisitors(smooks, selectorVisitorMap);
         log.info(this + " Started");
@@ -222,23 +224,23 @@ public class SmooksProcessor implements Processor, Service, CamelContextAware
 
     private Smooks createSmooks(String configUri) throws IOException, SAXException
     {
-        if (smooks != null)
+        if (smooks == null)
         {
-            return smooks;
+        	smooks = new Smooks(configUri);
         }
         
-        final Smooks service = (Smooks) camelContext.getRegistry().lookup(Smooks.class.getName());
-        if (service != null)
-        {
-            log.info("Found smooks in registry: " + service.getClass().getName());
-            if (!Boolean.TRUE.equals(service.getApplicationContext().getAttribute("ConfiguredWithOSGIHeader")))
-            {
-            	service.addConfigurations(configUri);
-            }
-            return service;
-        }
+//        final Smooks service = (Smooks) camelContext.getRegistry().lookup(Smooks.class.getName());
+//        if (service != null)
+//        {
+//            log.info("Found smooks in registry: " + service.getClass().getName());
+//            if (!Boolean.TRUE.equals(service.getApplicationContext().getAttribute("ConfiguredWithOSGIHeader")))
+//            {
+//            	service.addConfigurations(configUri);
+//            }
+//            return service;
+//        }
 
-        return new Smooks(configUri);
+        return smooks;
     }
 
     private void addAppenders(Smooks smooks, Set<VisitorAppender> appenders)
